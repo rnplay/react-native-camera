@@ -112,16 +112,22 @@ Values: `Camera.constants.Aspect.fit` or `"fit"`, `Camera.constants.Aspect.fill`
 
 The `aspect` property allows you to define how your viewfinder renders the camera's view. For instance, if you have a square viewfinder and you want to fill the it entirely, you have two options: `"fill"`, where the aspect ratio of the camera's view is preserved by cropping the view or `"stretch"`, where the aspect ratio is skewed in order to fit the entire image inside the viewfinder. The other option is `"fit"`, which ensures the camera's entire view fits inside your viewfinder without altering the aspect ratio.
 
+#### `captureAudio`
+
+Values: `true` (default), `false` (Boolean)
+
+*Applies to video capture mode only.* Specifies whether or not audio should be captured with the video.
+
 
 #### `captureMode`
 
-Values: `Camera.constants.CaptureMode.still` (default)
+Values: `Camera.constants.CaptureMode.still` (default), `Camera.constants.CaptureMode.video`
 
-The type of capture that will be performed by the camera - either a still image or (hopefully soon, video).
+The type of capture that will be performed by the camera - either a still image or video.
 
 #### `captureTarget`
 
-Values: `Camera.constants.CaptureTarget.memory` (default), `Camera.constants.CaptureTarget.disk`
+Values: `Camera.constants.CaptureTarget.cameraRoll` (default), `Camera.constants.CaptureTarget.disk`, ~~`Camera.constants.CaptureTarget.memory`~~ (deprecated), 
 
 This property allows you to specify the target output of the captured image data. By default the image binary is sent back as a base 64 encoded string. The disk output has been shown to improve capture response time, so that is the recommended value.
 
@@ -147,7 +153,20 @@ Will call the specified method when a barcode is detected in the camera's view.
 
 Event contains `data` (the data in the barcode) and `bounds` (the rectangle which outlines the barcode.)
 
-*TODO: Only emit one event for each barcode scanned.*
+The following barcode types can be recognised:
+
+- `aztec`
+- `code138`
+- `code39`
+- `code39mod43`
+- `code93`
+- `ean13`
+- `ean8`
+- `pdf417`
+- `qr`
+- `upce`
+
+The barcode type is provided in the `data` object.
 
 #### `flashMode`
 
@@ -158,13 +177,35 @@ Values:
 
 Use the `flashMode` property to specify the camera flash mode.
 
+#### `torchMode`
+
+Values:
+`Camera.constants.TorchMode.on`,
+`Camera.constants.TorchMode.off`,
+`Camera.constants.TorchMode.auto`
+
+Use the `torchMode` property to specify the camera torch mode.
+
 ## Component methods
 
 You can access component methods by adding a `ref` (ie. `ref="camera"`) prop to your `<Camera>` element, then you can use `this.refs.camera.capture(cb)`, etc. inside your component.
 
 #### `capture([options,] callback)`
 
-Captures data from the camera. What is captured is based on the `captureMode` and `captureTarget` props. `captureMode` tells the camera whether you want a still image or -- in the future, this is not currently supported -- video. `captureTarget` allows you to specify how you want the data to be captured and sent back to you. The available `target`s are `Camera.constants.CaptureTarget.memory` and `Camera.constants.CaptureTarget.disk` - the latter has been shown to dramatically improve camera performance.
+Captures data from the camera. What is captured is based on the `captureMode` and `captureTarget` props. `captureMode` tells the camera whether you want a still image or video. `captureTarget` allows you to specify how you want the data to be captured and sent back to you. See `captureTarget` under Properties to see the available values.
+
+Supported options:
+
+ - `audio` (See `captureAudio` under Properties)
+ - `mode` (See  `captureMode` under Properties)
+ - `target` (See `captureTarget` under Properties)
+ - `metadata` This is metadata to be added to the captured image.
+   - `location` This is the object returned from `navigator.geolocation.getCurrentPosition()` (React Native's geolocation polyfill). It will add GPS metadata to the image.
+ - `rotation` This will rotate the image by the number of degrees specified.
+ 
+#### `stopCapture()`
+
+Ends the current capture session for video captures. Only applies when the current `captureMode` is `video`.
 
 ## Subviews
 This component supports subviews, so if you wish to use the camera view as a background or if you want to layout buttons/images/etc. inside the camera then you can do that.
@@ -172,7 +213,7 @@ This component supports subviews, so if you wish to use the camera view as a bac
 ## Todo
 These are some features I think would be important/beneficial to have included with this module. Pull requests welcome!
 
-- [ ] Video support
+- [x] Video support
 - [x] Flash mode setting
 - [x] Automatic orientation adjustment
 - [ ] Tap to focus
